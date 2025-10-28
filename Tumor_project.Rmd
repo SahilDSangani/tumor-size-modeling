@@ -1,0 +1,283 @@
+---
+title: "Modeling Tumor Size with Categorical Predictors"
+output: bookdown::html_document2
+author: "Sahil Sangani"
+date: "2025-10-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This project investigates the relationship between lifestyle, demographic, and clinical factors in predicting tumor size using linear regression modeling in R. It demonstrates how categorical predictors—such as Physical Activity, Alcohol Consumption, and Smoking History—affect tumor growth and interact with one another.
+
+The analysis is implemented in a templatized R Markdown framework, allowing users to easily substitute datasets or variable names to produce new analyses and visualizations with minimal adjustments. This modular design promotes fast exploratory analysis and reproducible research, enabling efficient iteration on different health-related or behavioral datasets.
+
+The project includes statistical modeling, ANOVA testing, and visualization using ggplot2 to interpret variable effects and interactions.
+
+```{r import, include=FALSE}
+library(stringr)
+library(ggplot2)
+library(patchwork)
+library(cowplot)
+load("colorectal_Midterm.RData")
+```
+
+```{r preamble, echo=FALSE}
+dataset <- cancer_data
+DataName<-"cancer_data"
+x1name<-"Physical_Activity"
+x2name<-"Alcohol_Consumption"
+y1name<-"Tumor_Size_mm"
+x1clean <- str_replace_all(x1name, "_", " ")
+x2clean <- str_replace_all(x2name, "_", " ")
+y1clean <- str_replace_all(y1name, "_", " ")
+```
+
+```{r data, echo=FALSE}
+x1 <- dataset[,x1name]
+y1 <- dataset[,y1name]
+x2 <- dataset[,x2name]
+```
+
+## Exploratory ANOVA Analysis
+
+A two-way ANOVA was conducted to examine the effects of `r x1clean` and `r x2clean` on `r y1clean`. This analysis evaluates the individual (main) effects of each factor as well as their interaction effect—whether the influence of `r x1clean` on `r y1clean` depends on the level of `r x2clean`.
+
+```{r, echo=FALSE}
+formula <- as.formula(paste(y1name, "~", x1name, "*", x2name))
+mAll <- aov(formula, data=dataset)
+aovsummary <- summary(mAll)[[1]]
+x1df <- aovsummary$Df[1]
+x2df <- aovsummary$Df[2]
+x1x2df <- aovsummary$Df[3]
+residdf <- aovsummary$Df[4]
+```
+
+### Main Effects and Interaction Results
+
+Main Effect of `r x1clean`
+
+F(`r x1df`, `r residdf`) = `r round(aovsummary$F[1], 3)`, p = `r round(aovsummary$'Pr(>F)'[1], 3)`
+
+The p-value indicates whether `r x1clean` has a statistically significant effect on `r y1clean`, ignoring the influence of `r x2clean`. At the 0.05 significance level, if p \< 0.05, we reject the null hypothesis and conclude that `r x1clean` has a significant effect on `r y1clean`. Otherwise, there is no statistically significant effect.
+
+Main Effect of `r x2clean`
+
+F(`r x2df`, `r residdf`) = `r round(aovsummary$F[2], 3)`, p = `r round(aovsummary$'Pr(>F)'[2], 3)`
+
+The p-value tests whether `r x2clean` significantly influences `r y1clean`, controlling for `r x1clean`. At the 0.05 significance level, if p \< 0.05, we conclude that `r x2clean` has a significant effect on `r y1clean`. Otherwise, we fail to reject the null hypothesis.
+
+Interaction Effect: `r x1clean` × `r x2clean`
+
+F(`r x1x2df`, `r residdf`) = `r round(aovsummary$F[3], 3)`, p = `r round(aovsummary$'Pr(>F)'[3], 3)`
+
+This tests whether the effect of `r x1clean` on `r y1clean` depends on the level of `r x2clean`. At the 0.05 significance level, if p \< 0.05, we reject the null hypothesis and conclude that there is a statistically significant interaction between `r x1clean` and `r x2clean`. Otherwise, there is no evidence of a significant interaction.
+
+### Visualizing ANOVA Results
+
+```{r, fig.width=12, echo=FALSE}
+
+par(mfrow = c(1, 2))
+
+plot1 <- ggplot(dataset, aes(x = x1, y = y1, fill = x2)) +
+  geom_boxplot() +
+  labs(
+    title = paste(y1clean, "by", x1clean, "and", x2clean),
+    x = x1clean,
+    y = y1clean,
+    fill = x2clean
+  ) +
+  theme_minimal()
+
+plot2 <- ggplot(dataset, aes(x = x1, y = y1, fill = x1)) +
+  geom_boxplot() +
+  facet_wrap(~ factor(x2)) +
+  labs(
+    title = paste(y1clean, "by", x1clean, "faceted by", x2clean),
+    x = x1clean,
+    y = y1clean
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+plot_grid(plot1, plot2, ncol = 2) 
+```
+
+```{r traintestsplit, echo=FALSE}
+train_idx <- seq(2,dim(dataset)[1],by=2)
+trainDF <- dataset[train_idx,]
+test_idx <- seq(1, dim(dataset)[1],by=6)
+test_DF <- dataset[test_idx,]
+```
+
+## Linear Model with Two Categorical Predictors
+
+A predictive model was fit using `r x1clean` and `r x2clean` to predict `r y1clean`.
+
+```{r model, echo=FALSE}
+# fit model with variables of choice 
+formula = as.formula(paste(y1name, "~", x1name, "+", x2name))
+model <- lm(formula, data=trainDF)
+
+# Goodness of fit
+r_squared <- summary(model)$r.squared
+print(paste0("r-squared of the model:", r_squared))
+
+# p-value calculation
+model_summary <- summary(model)
+p_value <- pf(model_summary$fstatistic[1], 
+                model_summary$fstatistic[2], 
+                model_summary$fstatistic[3], 
+                lower.tail = FALSE)
+```
+
+### Model Summary
+
+F(`r summary(model)$fstatistic[2]`, `r summary(model)$fstatistic[3]`) = `r round(summary(model)$fstatistic[1], 3)`, p = `r round(p_value, 4)`
+
+R² = `r round(r_squared, 4)`
+
+The F-statistic tests the null hypothesis that all regression coefficients are equal to zero, meaning the model with predictors does not explain more variability than a model with no predictors.
+At the 0.05 significance level, if p < 0.05, we reject the null hypothesis and conclude that the model provides a statistically significant improvement in explaining `r y1clean` compared to a model with no predictors.
+
+### Goodness of Fit
+
+The R-squared value of `r round(r_squared, 4)` indicates that approximately `r round(r_squared * 100, 2)`% of the variability in `r y1clean` is explained by the predictors `r x1clean` and `r x2clean`.
+
+### Interpretation
+
+If the model’s p-value is small (typically < 0.05), we can infer that at least one of the predictors (`r x1clean` or `r x2clean`) has a statistically significant relationship with `r y1clean`.
+To further understand the nature of these effects, we can examine the model’s coefficients and visualize predicted values or interaction plots.
+
+```{r plots2, fig.width=12, echo=FALSE, message=FALSE}
+par(mfrow = c(1, 2))
+
+plot_data <- data.frame(fitted_values = fitted(model), residuals=residuals(model))
+plot1 <- ggplot(plot_data, aes(x=fitted_values, y=residuals)) +
+  geom_point(alpha=0.1, color="midnightblue") + 
+  geom_smooth(method="loess", se=TRUE, color="red") +
+  labs(x="Fitted Values", y="Residuals", title="Train: Fitted Values vs. Residuals plot") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+coefficients <- coef(model)[-1]
+coef_df <- data.frame(
+  Label = names(coefficients),
+  value = unlist(coefficients)
+)
+coef_df$sign <- ifelse(coef_df$value >= 0, "Positive", "Negative")
+plot2 <- ggplot(data=coef_df, aes(y=value, x=Label, fill=sign)) +
+  geom_col(width=0.7) +
+  scale_fill_manual(values=c("Positive"="seagreen", "Negative"="rosybrown")) +
+  labs(x="Coefficient Value", y="Predictor", title="Regression Coefficients",
+       fill="Effect") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5))
+
+plot_grid(plot1, plot2, ncol = 2) 
+```
+
+## Assessing Variable Importance and Model Refinement
+
+
+Joe is a 40 year old male, the following model is fit to figure out what change in lifestyle would reduce the risk of a bad outcome the most. I will fit the model with desired behavioral features, and then use test data which consists of a scenario, where Joe has a change in lifestyle in exactly one feature while the rest are held constant.
+
+The model is first fitted using Joe’s baseline characteristics, and then evaluated under different lifestyle modifications. In each case, only one behavioral variable is changed at a time, while all others are held constant. This approach isolates the effect of each behavior on the predicted tumor size.
+
+```{r full model, echo=FALSE}
+full_model <- lm(Tumor_Size_mm~ . -Cancer_Stage-Age-Gender, data=dataset)
+# summary(full_model)
+```
+
+### Predicted Outcomes for Different Lifestyle Scenarios
+
+```{r predict, echo=FALSE}
+test_data <- data.frame(
+  Age = c(40,40,40,40,40),
+  Gender = c("M", "M", "M", "M", "M"),
+  Cancer_Stage = c("Localized","Localized","Localized","Localized","Localized"),
+  Smoking_History = c("Yes","Yes","No","Yes","Yes"),
+  Alcohol_Consumption = c("Yes","No","Yes","Yes","Yes"),
+  Urban_or_Rural = c("Urban","Urban","Urban","Rural","Urban"),
+  Physical_Activity = c("Low","Low","Low","Low","Moderate")
+)
+test_data$predicted_outcomes <- predict(full_model, test_data)
+test_data$predicted_outcomes
+```
+
+```{r plots3, fig.width=15, echo=FALSE}
+par(mfrow = c(1, 2))
+
+custom_labels <- c("No change", "No alcohol", "Stops smoking", "Rural", "Moderate activity")
+test_data$scenario <- factor(custom_labels, levels=custom_labels)
+
+plot1 <- ggplot(data=test_data, aes(x=scenario,
+                                             y=predicted_outcomes, fill=predicted_outcomes)) +
+  geom_col(width=0.8) +
+  coord_cartesian(ylim=c(min(test_data$predicted_outcomes) * 0.95, 
+                          max(test_data$predicted_outcomes) * 1.02)) +
+  labs(x="", y="Predicted Tumor Size",
+       title="Predicted Tumor Size by Lifestyle Scenarioes") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "none")
+
+coefficients <- coef(full_model)[-1]
+coef_df <- data.frame(
+  Label = names(coefficients),
+  value = unlist(coefficients)
+)
+coef_df$sign <- ifelse(coef_df$value >= 0, "Positive", "Negative")
+
+plot2 <- ggplot(data=coef_df, aes(x=Label, y=value, fill=sign)) +
+  geom_col(width=0.8) +
+  scale_fill_manual(values=c("Positive"="seagreen", "Negative"="rosybrown")) +
+  labs(x="", y="Coefficient Value",
+       title="Regression Coefficients from Full Model",
+       Fill="Effect on \n Tumor Size") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5))
+
+plot_grid(plot1, plot2, ncol = 2) 
+```
+
+
+
+**Baseline scenario** – Joe drinks alcohol, smokes, lives in an urban area, and has low physical activity.
+
+* Predicted tumor size: `r round(test_data$predicted_outcomes[1],2)` mm
+
+**Stops drinking alcohol** – Joe no longer drinks alcohol but continues to smoke and maintain low activity.
+
+* Predicted tumor size: `r round(test_data$predicted_outcomes[2],2)` mm
+
+* Compared to baseline, quitting alcohol reduces his expected tumor size.
+
+**Stops smoking** – Joe continues to drink alcohol but stops smoking.
+
+* Predicted tumor size: `r round(test_data$predicted_outcomes[3],2)` mm
+
+* This yields the largest reduction in predicted tumor size among all lifestyle changes considered.
+
+**Moves to a rural area** – Joe maintains his habits but changes his residence from urban to rural.
+
+* Predicted tumor size: `r round(test_data$predicted_outcomes[4],2)` mm
+
+* In this model, living in a rural area is associated with a slight increase in expected tumor size.
+
+**Increases physical activity** – Joe remains a smoker and drinker but increases his physical activity level.
+
+* Predicted tumor size: `r round(test_data$predicted_outcomes[5],2)` mm
+
+* Increased activity leads to a moderate decrease in tumor size relative to baseline.
+
+### Interpretation and Insights
+
+The model suggests that quitting smoking leads to the greatest reduction in expected tumor size, followed by increasing physical activity and reducing alcohol consumption. Living in a rural area is associated with a slight increase in tumor size under this model.
+
+Overall, the regression results align with the ANOVA findings: behavioral factors have significant effects on tumor size, with smoking emerging as the most influential predictor. The model explains a meaningful portion of variability in tumor size, supporting the idea that lifestyle modifications can play an important role in reducing cancer risk.
