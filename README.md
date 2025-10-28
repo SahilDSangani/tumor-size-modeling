@@ -48,7 +48,6 @@ The model shows that quitting smoking results in the **largest decrease** in exp
 
 - **R**
 - **ggplot2** – Visualization  
-- **broom**, **dplyr** – Model interpretation and data manipulation  
 - **R Markdown** – Reproducible reporting  
 
 ---
@@ -57,4 +56,4 @@ The model shows that quitting smoking results in the **largest decrease** in exp
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/tumor-size-modeling.git
+   git clone https://github.com/SahilDSangani/tumor-size-modeling.git
