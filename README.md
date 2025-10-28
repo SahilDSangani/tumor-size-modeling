@@ -2,7 +2,7 @@
 
 This project explores how lifestyle and demographic factors—such as physical activity, smoking, alcohol consumption, and living environment—affect tumor size. Using R, the analysis fits multiple linear models and two-way ANOVAs to evaluate both individual and interaction effects of these variables.  
 
-The R Markdown file (`Midterm.Rmd`) is **templatized**, allowing you to easily swap in new datasets or variable names to generate fresh analyses and visualizations with minimal code changes.  
+The R Markdown file (`Tumor_project.Rmd`) is **templatized**, allowing you to easily swap in new datasets or variable names to generate fresh analyses and visualizations with minimal code changes.  
 
 ---
 
