@@ -1,51 +1,60 @@
 # Tumor Size Prediction and Lifestyle Impact Modeling in R
 
-This project explores how lifestyle and demographic factors—such as physical activity, smoking, alcohol consumption, and living environment—affect tumor size. Using R, the analysis fits multiple linear models and two-way ANOVAs to evaluate both individual and interaction effects of these variables.  
+This project analyzes how lifestyle and demographic factors—such as physical activity, alcohol consumption, smoking history, and living environment—affect tumor size.  
+It uses two-way ANOVA and multiple linear regression to explore both individual and interaction effects of these variables.  
 
-The R Markdown file (`Tumor_project.Rmd`) is **templatized**, allowing you to easily swap in new datasets or variable names to generate fresh analyses and visualizations with minimal code changes.  
+The report is written in a **templatized R Markdown framework**, allowing users to easily replace variable names or datasets to quickly produce new analyses and visualizations.
 
 ---
 
-## 📊 Project Overview
+## 📂 Repository Contents
 
-- **Goal:** Identify which behavioral changes most strongly reduce tumor size risk.
-- **Methods:**  
-  - Two-way ANOVA to analyze main and interaction effects.  
-  - Linear regression modeling to quantify variable importance.  
-  - Scenario-based prediction to simulate how lifestyle changes impact expected tumor size.  
-- **Visualization:**  
-  - Interaction plots and boxplots to visualize categorical relationships.  
-  - Scenario-based prediction charts for interpretability.
+| File | Description |
+|------|--------------|
+| `Tumor_project.Rmd` | Main R Markdown file containing all analysis, code, and inline interpretations. |
+| `Tumor_project.html` | Rendered HTML report version for easy viewing in a browser. |
+| `colorectal_Midterm.RData` | Dataset used in the analysis (colorectal cancer data). |
+
+---
+
+## 🎯 Project Objectives
+
+- Investigate how lifestyle factors influence tumor size (in mm).  
+- Test for main and interaction effects using **two-way ANOVA**.  
+- Fit and evaluate **linear regression models** for prediction.  
+- Simulate lifestyle changes through **scenario-based modeling**.  
+- Provide reusable, **templatized code** for quick reanalysis.
 
 ---
 
 ## 🧠 Scenario Example
 
-A hypothetical case study is presented for **Joe**, a 40-year-old male, to demonstrate the model’s predictive power.  
-By holding all other variables constant, the analysis simulates how individual lifestyle changes—such as quitting smoking or increasing physical activity—affect predicted tumor size.  
-The model shows that quitting smoking yields the largest reduction in expected tumor size, highlighting the importance of behavioral interventions.
+A hypothetical case study (“Joe”) illustrates how changes in one behavior—such as quitting smoking or increasing physical activity—affect predicted tumor size while keeping other factors constant.  
+The model shows that quitting smoking results in the **largest decrease** in expected tumor size, emphasizing the importance of behavioral factors in health outcomes.
 
 ---
 
 ## 🧩 Features
 
-- **Templatized analysis:** swap variable names and datasets easily.  
-- **Statistical testing:** ANOVA, linear regression, and model comparison.  
-- **Visualization-ready:** clean ggplot2-based plots for immediate reporting.  
-- **Reproducible:** fully written in R Markdown with inline statistical explanations.
+- **Templatized Analysis:** Swap datasets or variable names to generate new reports effortlessly.  
+- **Statistical Modeling:** Two-way ANOVA, linear regression, and model comparison.  
+- **Scenario-Based Predictions:** Predict outcomes under different behavioral conditions.  
+- **Visualizations:** ggplot2 plots for boxplots, interactions, and prediction comparisons.  
+- **Reproducibility:** Fully implemented in R Markdown with clean, dynamic text rendering.
 
 ---
 
 ## ⚙️ Technologies Used
 
-- **R**  
-- **ggplot2** – visualization  
-- **R Markdown** – reproducible reporting framework
+- **R**
+- **ggplot2** – Visualization  
+- **broom**, **dplyr** – Model interpretation and data manipulation  
+- **R Markdown** – Reproducible reporting  
 
 ---
 
-## 🚀 How to Run
+## 🚀 How to Run the Project
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/SahilDSangani/tumor-size-modeling.git
+   git clone https://github.com/yourusername/tumor-size-modeling.git
